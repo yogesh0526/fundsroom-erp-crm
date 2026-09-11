@@ -1,0 +1,337 @@
+{
+  "info": {
+    "_postman_id": "893c5d88-bdf2-4ce2-b2d9-e9314c184000",
+    "name": "Fundsroom Mini ERP + CRM Portal APIs",
+    "description": "Complete REST API collection covering Multi-Role Authentication, Customer CRM & Follow-ups, Product Inventory & Low-Stock Alerts, Atomic Sales Challans with Stock Invariance, and Commercial GST Invoicing with PDF Export.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login - Admin Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@erp.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login - Sales Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sales@erp.com\",\n  \"password\": \"Sales@123\"\n}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login - Warehouse Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"warehouse@erp.com\",\n  \"password\": \"Warehouse@123\"\n}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login - Accounts Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data && jsonData.data.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"accounts@erp.com\",\n  \"password\": \"Accounts@123\"\n}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Get Current Profile (/me)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Customer CRM Module",
+      "item": [
+        {
+          "name": "List Customers (with search & filters)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/customers?search=Apex&type=DISTRIBUTOR&status=ACTIVE&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "search", "value": "Apex" },
+                { "key": "type", "value": "DISTRIBUTOR" },
+                { "key": "status", "value": "ACTIVE" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dynasty Power Tools Corp\",\n  \"businessName\": \"Dynasty Power Tools & Supply Ltd\",\n  \"mobile\": \"+91 98333 44556\",\n  \"email\": \"procurement@dynastypower.in\",\n  \"gstNumber\": \"27AABCD9988E1Z5\",\n  \"customerType\": \"WHOLESALE\",\n  \"address\": \"Industrial Corridor Sector 12, Navi Mumbai 400705\",\n  \"status\": \"LEAD\",\n  \"notes\": \"Interested in bulk orders of industrial drill kits and PPE gear.\"\n}"
+            },
+            "url": "{{base_url}}/customers"
+          }
+        },
+        {
+          "name": "Get Customer Details",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/customers/:id"
+          }
+        },
+        {
+          "name": "Add Follow-up Note",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Discussed wholesale quantity pricing tiers. Customer requested quotation for 50 power drills.\",\n  \"nextFollowUpDate\": \"2026-09-18T10:00:00.000Z\"\n}"
+            },
+            "url": "{{base_url}}/customers/:id/follow-ups"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Products & Stock Inventory",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products"
+          }
+        },
+        {
+          "name": "List Low Stock Alert Products",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/products?lowStock=true"
+          }
+        },
+        {
+          "name": "Create Product SKU",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Industrial Cordless Impact Driver\",\n  \"sku\": \"TL-IMP-18V\",\n  \"category\": \"Power Tools\",\n  \"unitPrice\": 5400.0,\n  \"currentStock\": 25,\n  \"minStockAlert\": 8,\n  \"location\": \"Warehouse A - Bay 5\"\n}"
+            },
+            "url": "{{base_url}}/products"
+          }
+        },
+        {
+          "name": "Manual Stock Inward / Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"replace-with-product-id\",\n  \"quantity\": 15,\n  \"movementType\": \"IN\",\n  \"reason\": \"Supplier purchase receipt PO-2026-099\"\n}"
+            },
+            "url": "{{base_url}}/inventory/adjust"
+          }
+        },
+        {
+          "name": "View Stock Movements Audit Ledger",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/inventory/movements"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Sales Challans",
+      "item": [
+        {
+          "name": "List Sales Challans",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/challans"
+          }
+        },
+        {
+          "name": "Create Draft Sales Challan (No Stock Change)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"replace-with-customer-id\",\n  \"items\": [\n    {\n      \"productId\": \"replace-with-product-id\",\n      \"quantity\": 2\n    }\n  ],\n  \"status\": \"DRAFT\",\n  \"notes\": \"Awaiting purchase order from buyer\"\n}"
+            },
+            "url": "{{base_url}}/challans"
+          }
+        },
+        {
+          "name": "Create Confirmed Challan (Atomic Stock Deduction)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"replace-with-customer-id\",\n  \"items\": [\n    {\n      \"productId\": \"replace-with-product-id\",\n      \"quantity\": 2\n    }\n  ],\n  \"status\": \"CONFIRMED\",\n  \"notes\": \"Immediate dispatch via BlueDart\"\n}"
+            },
+            "url": "{{base_url}}/challans"
+          }
+        },
+        {
+          "name": "Confirm Draft Challan (Patch Status)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+            },
+            "url": "{{base_url}}/challans/:id/status"
+          }
+        },
+        {
+          "name": "Download Delivery Challan PDF",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/challans/:id/pdf"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Invoices & Billing",
+      "item": [
+        {
+          "name": "List Invoices",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/invoices"
+          }
+        },
+        {
+          "name": "Generate Invoice from Confirmed Challan",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/invoices/generate/:challanId"
+          }
+        },
+        {
+          "name": "Download Tax Invoice PDF",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/invoices/:id/pdf"
+          }
+        }
+      ]
+    }
+  ]
+}

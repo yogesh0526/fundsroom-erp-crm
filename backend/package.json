@@ -11,7 +11,14 @@
     "prisma:push": "prisma db push",
     "prisma:seed": "ts-node-dev prisma/seed.ts"
   },
-  "keywords": ["erp", "crm", "express", "prisma", "typescript", "postgresql"],
+  "keywords": [
+    "erp",
+    "crm",
+    "express",
+    "prisma",
+    "typescript",
+    "postgresql"
+  ],
   "author": "Fundsroom Fullstack Engineering",
   "license": "MIT",
   "dependencies": {
@@ -28,14 +35,14 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/multer": "^1.4.12",
-    "@types/node": "^22.13.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.25",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^1.4.13",
+    "@types/node": "^22.20.2",
     "@types/pdfkit": "^0.13.9",
     "prisma": "^6.4.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.9.3"
   }
 }

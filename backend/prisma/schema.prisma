@@ -1,0 +1,188 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SALES
+  WAREHOUSE
+  ACCOUNTS
+}
+
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+}
+
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+enum ChallanStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+model User {
+  id             String             @id @default(uuid())
+  name           String
+  email          String             @unique
+  password       String
+  role           Role               @default(SALES)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  followUps      CustomerFollowUp[]
+  stockMovements StockMovement[]
+  challans       Challan[]
+  invoices       Invoice[]
+
+  @@map("users")
+}
+
+model Customer {
+  id             String             @id @default(uuid())
+  name           String
+  mobile         String
+  email          String
+  businessName   String
+  gstNumber      String?
+  customerType   CustomerType       @default(RETAIL)
+  address        String
+  status         CustomerStatus     @default(LEAD)
+  followUpDate   DateTime?
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  followUps      CustomerFollowUp[]
+  challans       Challan[]
+
+  @@map("customers")
+}
+
+model CustomerFollowUp {
+  id                String    @id @default(uuid())
+  customerId        String
+  note              String
+  nextFollowUpDate  DateTime?
+  createdById       String
+  createdAt         DateTime  @default(now())
+
+  customer          Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdBy         User      @relation(fields: [createdById], references: [id])
+
+  @@map("customer_follow_ups")
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  sku            String          @unique
+  category       String
+  unitPrice      Float
+  currentStock   Int             @default(0)
+  minStockAlert  Int             @default(5)
+  location       String
+  imageUrl       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  stockMovements StockMovement[]
+  challanItems   ChallanItem[]
+
+  @@map("products")
+}
+
+model StockMovement {
+  id           String        @id @default(uuid())
+  productId    String
+  quantity     Int
+  movementType MovementType
+  reason       String
+  referenceId  String?
+  createdById  String
+  createdAt    DateTime      @default(now())
+
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  createdBy    User          @relation(fields: [createdById], references: [id])
+
+  @@map("stock_movements")
+}
+
+model Challan {
+  id               String        @id @default(uuid())
+  challanNumber    String        @unique
+  customerId       String
+  customerSnapshot Json
+  totalQuantity    Int
+  totalAmount      Float
+  status           ChallanStatus @default(DRAFT)
+  notes            String?
+  createdById      String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  customer         Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  createdBy        User          @relation(fields: [createdById], references: [id])
+  items            ChallanItem[]
+  invoice          Invoice?
+
+  @@map("challans")
+}
+
+model ChallanItem {
+  id          String   @id @default(uuid())
+  challanId   String
+  productId   String
+  productName String
+  sku         String
+  unitPrice   Float
+  quantity    Int
+  totalPrice  Float
+
+  challan     Challan  @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("challan_items")
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique
+  challanId     String        @unique
+  customerId    String
+  subtotal      Float
+  taxRate       Float         @default(18.0)
+  taxAmount     Float
+  totalAmount   Float
+  status        InvoiceStatus @default(ISSUED)
+  createdById   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  challan       Challan       @relation(fields: [challanId], references: [id], onDelete: Restrict)
+  createdBy     User          @relation(fields: [createdById], references: [id])
+
+  @@map("invoices")
+}

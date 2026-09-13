@@ -23,7 +23,7 @@ ENV NODE_ENV=production
 ENV PORT=5000
 
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
@@ -34,4 +34,4 @@ RUN mkdir -p /app/uploads
 
 EXPOSE 5000
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push && node dist/server.js"]

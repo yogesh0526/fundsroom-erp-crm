@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Customer, Product, StockMovement, Challan, Invoice, User } from '../types';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -85,7 +85,7 @@ export const challanApi = {
     api.post<{ success: boolean; message: string; data: Challan }>('/challans', data),
   updateStatus: (id: string, status: 'CONFIRMED' | 'CANCELLED') =>
     api.patch<{ success: boolean; message: string; data: Challan }>(`/challans/${id}/status`, { status }),
-  downloadPdfUrl: (id: string) => `/api/challans/${id}/pdf`,
+  downloadPdfUrl: (id: string) => `${import.meta.env.VITE_API_URL || '/api'}/challans/${id}/pdf`,
 };
 
 export const invoiceApi = {
@@ -95,7 +95,7 @@ export const invoiceApi = {
     api.get<{ success: boolean; data: Invoice }>('/invoices/' + id),
   generate: (challanId: string) =>
     api.post<{ success: boolean; message: string; data: Invoice }>(`/invoices/generate/${challanId}`),
-  downloadPdfUrl: (id: string) => `/api/invoices/${id}/pdf`,
+  downloadPdfUrl: (id: string) => `${import.meta.env.VITE_API_URL || '/api'}/invoices/${id}/pdf`,
 };
 
 export default api;

@@ -4,19 +4,67 @@
 
 ---
 
+## 🔗 Quick Links & Evaluation Summary
+
+| Environment | Service | Access URL |
+|---|---|---|
+| **Live Production** | 🌐 **Live Frontend Application (Vercel)** | [https://fundsroom-erp-crm-five.vercel.app](https://fundsroom-erp-crm-five.vercel.app) |
+| **Local Development** | 💻 **Frontend Web App** | [`http://localhost:5173`](http://localhost:5173) |
+| **Local Development** | ⚙️ **Backend REST API** | [`http://localhost:5000`](http://localhost:5000) |
+| **Local Development** | 📚 **Interactive Swagger / OpenAPI Docs** | [`http://localhost:5000/api/docs`](http://localhost:5000/api/docs) |
+| **API Testing** | 📬 **Postman Collection v2.1** | [`postman_collection.json`](./postman_collection.json) |
+
+---
+
+## ⚡ Instant 2-Minute Local Run Guide
+
+To run the full stack locally on your computer:
+
+```powershell
+# Terminal 1: Start Backend API (Port 5000)
+cd C:\Fundsroom\backend
+npm install
+npm run prisma:seed   # Seeds users, products, customers, and challans
+npm run dev
+
+# Terminal 2: Start Frontend UI (Port 5173)
+cd C:\Fundsroom\frontend
+npm install
+npm run dev
+```
+
+- Open **`http://localhost:5173`** in your browser.
+- Interactive API Docs are live at **`http://localhost:5000/api/docs`**.
+
+---
+
+## 🔑 Test Login Credentials (All 4 Roles Pre-Seeded)
+
+All 4 required roles are pre-seeded into the database and available for instant testing:
+
+| Role | Email Address | Password | Primary Permissions |
+|---|---|---|---|
+| **Admin** | `admin@erp.com` | `Admin@123` | Full system access across all modules |
+| **Sales** | `sales@erp.com` | `Sales@123` | Customer CRM, Follow-up Notes, Create & Confirm Challans |
+| **Warehouse** | `warehouse@erp.com` | `Warehouse@123` | Product Catalog, Stock Adjustments, Movement Ledger |
+| **Accounts** | `accounts@erp.com` | `Accounts@123` | Customer Directory, Challans Audit, Invoices & PDF Export |
+
+> **Evaluator Tip:** The web application features quick 1-click test buttons on the Login screen and a **"Switch Test Persona"** dropdown in the top navbar to seamlessly test all roles without re-typing passwords.
+
+---
+
 ## 📋 Table of Contents
 1. [Business Context & Core Features](#business-context--core-features)
 2. [Tech Stack](#tech-stack)
-3. [Test Login Credentials for All Roles](#test-login-credentials-for-all-roles)
-4. [Role-Based Access Control (RBAC) Matrix](#role-based-access-control-rbac-matrix)
-5. [Critical Business Logic & Invariants](#critical-business-logic--invariants)
-6. [System Architecture](#system-architecture)
-7. [Local Setup Guide (Step-by-Step)](#local-setup-guide-step-by-step)
-8. [Docker Compose Deployment](#docker-compose-deployment)
-9. [Free Cloud & AWS Deployment Guide](#free-cloud--aws-deployment-guide)
-10. [Environment Variables Reference](#environment-variables-reference)
-11. [API Documentation & Postman Collection](#api-documentation--postman-collection)
-12. [Assumptions Made & Known Limitations](#assumptions-made--known-limitations)
+3. [Role-Based Access Control (RBAC) Matrix](#role-based-access-control-rbac-matrix)
+4. [Critical Business Logic & Invariants](#critical-business-logic--invariants)
+5. [System Architecture](#system-architecture)
+6. [Local Setup Guide (Detailed)](#local-setup-guide-detailed)
+7. [Docker Compose Deployment](#docker-compose-deployment)
+8. [Free Cloud & AWS Deployment Guide](#free-cloud--aws-deployment-guide)
+9. [Environment Variables Reference](#environment-variables-reference)
+10. [API Documentation & Postman Collection](#api-documentation--postman-collection)
+11. [Assumptions Made & Known Limitations](#assumptions-made--known-limitations)
 
 ---
 
@@ -70,21 +118,6 @@ This platform simulates the daily operations of a wholesale/distribution company
 
 ---
 
-## 🔑 Test Login Credentials for All Roles
-
-All 4 required roles are pre-seeded into the PostgreSQL database:
-
-| Role | Email Address | Password | Primary Permissions |
-|---|---|---|---|
-| **Admin** | `admin@erp.com` | `Admin@123` | Full system access across all modules |
-| **Sales** | `sales@erp.com` | `Sales@123` | Customer CRM, Follow-up Notes, Create & Confirm Challans |
-| **Warehouse** | `warehouse@erp.com` | `Warehouse@123` | Product Catalog, Stock Adjustments, Stock Movement Ledger |
-| **Accounts** | `accounts@erp.com` | `Accounts@123` | Customer Directory, Challans Audit, Generate Invoices & PDF Export |
-
-> **Evaluator Tip:** The web application features quick 1-click buttons on the Login page and a **"Switch Test Persona"** dropdown in the top navbar to seamlessly test all roles without re-typing passwords.
-
----
-
 ## 🛡️ Role-Based Access Control (RBAC) Matrix
 
 | Module / Action | Admin | Sales | Warehouse | Accounts |
@@ -112,13 +145,7 @@ All 4 required roles are pre-seeded into the PostgreSQL database:
 1. **Strict Stock Non-Negativity Invariant**:
    - Stock counts in warehouse can **never** become negative.
    - When a challan is confirmed or a warehouse stock deduction is submitted, the API runs inside an atomic `prisma.$transaction`.
-   - If `currentStock < requestedQuantity`, the transaction immediately aborts and returns HTTP 400:
-     ```json
-     {
-       "success": false,
-       "message": "Insufficient stock for 'Heavy Duty Angle Grinder 850W' (SKU: TL-AG-850). Available: 8, Requested: 15. Stock cannot go negative."
-     }
-     ```
+   - If `currentStock < requestedQuantity`, the transaction immediately aborts and returns HTTP 400.
 2. **Snapshot Immutability**:
    - When saving or confirming a Challan, the product name, SKU, and unit price are saved as line item snapshots.
    - If a product price or name changes in the catalog later, historical sales challans and invoices remain unchanged.
@@ -156,56 +183,38 @@ All 4 required roles are pre-seeded into the PostgreSQL database:
 
 ---
 
-## 🚀 Local Setup Guide (Step-by-Step)
+## 🚀 Local Setup Guide (Detailed)
 
 ### Prerequisites
 - **Node.js**: v20 or v22 installed
 - **PostgreSQL**: PostgreSQL 15, 16, 17, or 18 running locally or on a cloud provider (e.g. Neon/Supabase)
 
 ### 1. Database Setup
-Ensure PostgreSQL is running and create the database:
 ```sql
 CREATE DATABASE erp_crm_db;
 ```
 
 ### 2. Backend Setup
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Install dependencies
 npm install
-
-# Configure environment variables (Default configured for local PostgreSQL)
 cp .env.example .env
-
-# Sync database schema with PostgreSQL
 npx prisma db push
-
-# Seed initial roles, products, customers, movements & orders
 npm run prisma:seed
-
-# Start backend development server
 npm run dev
 ```
-Backend will start on: **`http://localhost:5000`**
+Backend will start on: **`http://localhost:5000`**  
 Swagger API documentation: **`http://localhost:5000/api/docs`**
 
 ### 3. Frontend Setup
 ```bash
-# In a new terminal, navigate to frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start Vite development server
 npm run dev
 ```
 Frontend will start on: **`http://localhost:5173`**
 
 ### 4. Run Automated Test Suite
-To verify the business logic, stock deduction invariants, and invoice calculations:
 ```bash
 cd backend
 npx ts-node-dev src/tests/business-logic.test.ts
@@ -219,9 +228,7 @@ Expected output:
 
 ## 🐳 Docker Compose Deployment
 
-A complete multi-container Docker setup is included:
 ```bash
-# From project root
 docker-compose up --build
 ```
 This provisions:
@@ -233,82 +240,17 @@ Open your browser at **`http://localhost`**.
 
 ---
 
-## ☁️ Free Cloud & AWS Deployment Guide
-
-### Option 1: Free Cloud Hosting (Recommended for Submissions)
-- **Database**: Create a free PostgreSQL instance on **[Neon.tech](https://neon.tech)** or **[Supabase](https://supabase.com)**. Copy the pooled connection string into `DATABASE_URL`.
-- **Backend**:
-  1. Push repository to GitHub.
-  2. Create a new Web Service on **[Render.com](https://render.com)** or **[Railway.app](https://railway.app)**.
-  3. Root directory: `backend`.
-  4. Build command: `npm install && npx prisma generate && npm run build`.
-  5. Start command: `npx prisma db push && node dist/server.js`.
-  6. Add environment variables: `DATABASE_URL`, `JWT_SECRET`, `NODE_ENV=production`.
-- **Frontend**:
-  1. Create a new Static Site on **[Vercel](https://vercel.com)** or **[Netlify](https://netlify.com)**.
-  2. Root directory: `frontend`.
-  3. Build command: `npm run build`.
-  4. Output directory: `dist`.
-  5. Set `VITE_API_URL` to your Render/Railway backend URL.
-
-### Option 2: AWS Deployment (Bonus Guide)
-1. **Database**: Provision an **AWS RDS PostgreSQL** (Free Tier `db.t4g.micro` or `db.t3.micro`).
-2. **Compute**: Launch an **AWS EC2** instance (Ubuntu 24.04 LTS `t3.small` or `t2.micro`).
-   - Install Docker & Docker Compose:
-     ```bash
-     sudo apt update && sudo apt install -y docker.io docker-compose
-     ```
-   - Clone repository and update `.env` with RDS `DATABASE_URL`.
-   - Run `docker-compose up -d --build`.
-3. **AWS S3 Bucket**:
-   - Create S3 bucket `fundsroom-product-assets`.
-   - Create IAM user with `AmazonS3FullAccess` and populate `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_S3_BUCKET_NAME`.
-4. **Domain & SSL**: Setup AWS Route 53 with an Elastic IP and obtain a free SSL certificate via Let's Encrypt / Certbot.
-
----
-
-## ⚙️ Environment Variables Reference
-
-### Backend (`backend/.env`)
-| Variable | Description | Example / Default |
-|---|---|---|
-| `PORT` | HTTP port the server listens on | `5000` |
-| `NODE_ENV` | Application environment | `development` or `production` |
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:root@localhost:5432/erp_crm_db?schema=public` |
-| `JWT_SECRET` | Secret key for signing auth tokens | `super-secret-jwt-key-wholesale-erp-crm-2026` |
-| `JWT_EXPIRES_IN` | Token expiration duration | `7d` |
-| `CLIENT_URL` | Allowed frontend origin for CORS | `http://localhost:5173` |
-| `AWS_REGION` | AWS region for S3 uploads | `us-east-1` |
-| `AWS_ACCESS_KEY_ID` | AWS IAM Access Key | *(Optional)* |
-| `AWS_SECRET_ACCESS_KEY` | AWS IAM Secret Key | *(Optional)* |
-| `AWS_S3_BUCKET_NAME` | AWS S3 Bucket Name | *(Optional)* |
-
----
-
-## 📑 API Documentation & Postman Collection
-
-### Interactive Swagger / OpenAPI Docs
-Visit **`http://localhost:5000/api/docs`** in your browser when the server is running to view and test all endpoints interactively.
-
-### Postman Collection
-The root directory includes a pre-configured, complete collection:
-`postman_collection.json`
-- Includes pre-request scripts that automatically extract and inject the JWT Bearer token upon logging in.
-- Organized into modules: Auth, Customers, Products, Inventory, Challans, and Invoices.
-
----
-
 ## 💡 Assumptions Made & Known Limitations
 
 ### Assumptions Made
 1. **Tax Model**: Standard Indian Wholesale GST calculation is applied (18% total = 9% CGST + 9% SGST).
 2. **Product Snapshots**: To prevent historical invoice/challan disputes, changes to product catalogs do not mutate existing past orders.
-3. **Storage Fallback**: AWS S3 integration is implemented; however, if AWS credentials are not specified in `.env`, the system automatically falls back to local disk storage (`backend/uploads/`) so evaluators can run the project locally without needing a paid AWS account.
+3. **Storage Fallback**: AWS S3 integration is implemented with automatic local disk storage fallback (`backend/uploads/`).
 
 ### Known Limitations & Roadmap
-1. **Multi-Warehouse Transfers**: Currently supports multiple warehouse locations/bays recorded per product, but internal transfer orders between distinct warehouses (e.g., WH-Pune to WH-Mumbai) can be added as a next iteration.
-2. **Email Dispatch**: Challan and Invoice PDFs are downloaded directly in the browser; automated dispatch via SendGrid/SES email can be hooked into the invoice generation service.
-3. **Partial Challan Fulfillment**: Challans currently deduct the entire requested quantity upon confirmation; backorder splitting can be introduced for partial shipments.
+1. **Multi-Warehouse Transfers**: Currently supports warehouse bin locations per SKU; inter-depot stock transfers can be added.
+2. **Automated Email Dispatch**: PDFs are downloaded directly in the browser; automated dispatch via SendGrid/SES email can be hooked in.
+3. **Partial Challan Fulfillment**: Backorder splitting for partial shipments.
 
 ---
 

@@ -1,0 +1,15 @@
+{
+  "buildCommand": "cd \"round 2/frontend\" && npm install && npm run build",
+  "outputDirectory": "round 2/frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://fundsroom-erp-crm-w26m.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

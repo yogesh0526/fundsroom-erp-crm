@@ -1,0 +1,250 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SALES
+}
+
+enum EnquiryStatus {
+  NEW
+  QUOTED
+  WON
+  LOST
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DISPATCHED
+  CANCELLED
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  name                String
+  email               String       @unique
+  password            String
+  role                Role         @default(SALES)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  enquiriesCreated    Enquiry[]
+  quotationsCreated   Quotation[]
+  salesOrdersCreated  SalesOrder[] @relation("SalesOrderCreator")
+  salesOrdersConfirmed SalesOrder[] @relation("SalesOrderConfirmer")
+  dispatchesCreated   Dispatch[]
+
+  @@map("users")
+}
+
+model Customer {
+  id            String       @id @default(uuid())
+  companyName   String
+  contactPerson String
+  mobile        String
+  email         String
+  city          String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  enquiries     Enquiry[]
+  quotations    Quotation[]
+  salesOrders   SalesOrder[]
+
+  @@map("customers")
+}
+
+model Product {
+  id              String           @id @default(uuid())
+  productCode     String           @unique
+  productName     String
+  category        String
+  unit            String
+  basePrice       Float
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  inventory       Inventory?
+  enquiryItems    EnquiryItem[]
+  quotationItems  QuotationItem[]
+  salesOrderItems SalesOrderItem[]
+  dispatchItems   DispatchItem[]
+
+  @@map("products")
+}
+
+model Inventory {
+  id               String   @id @default(uuid())
+  productId        String   @unique
+  physicalQuantity Int      @default(0)
+  reservedQuantity Int      @default(0)
+  damagedQuantity  Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("inventory")
+}
+
+model Enquiry {
+  id            String        @id @default(uuid())
+  enquiryNumber String        @unique
+  customerId    String
+  enquiryDate   DateTime      @default(now())
+  requiredDate  DateTime
+  notes         String?
+  status        EnquiryStatus @default(NEW)
+  createdById   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  createdBy     User          @relation(fields: [createdById], references: [id])
+  items         EnquiryItem[]
+  quotations    Quotation[]
+
+  @@map("enquiries")
+}
+
+model EnquiryItem {
+  id        String   @id @default(uuid())
+  enquiryId String
+  productId String
+  quantity  Int
+  notes     String?
+
+  enquiry   Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("enquiry_items")
+}
+
+model Quotation {
+  id              String          @id @default(uuid())
+  quotationNumber String          @unique
+  enquiryId       String
+  customerId      String
+  validUntil      DateTime
+  subtotal        Float
+  totalDiscount   Float
+  totalGst        Float
+  grandTotal      Float
+  status          QuotationStatus @default(DRAFT)
+  notes           String?
+  createdById     String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  enquiry         Enquiry         @relation(fields: [enquiryId], references: [id], onDelete: Restrict)
+  customer        Customer        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  createdBy       User            @relation(fields: [createdById], references: [id])
+  items           QuotationItem[]
+  salesOrder      SalesOrder?
+
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id              String    @id @default(uuid())
+  quotationId     String
+  productId       String
+  quantity        Int
+  unitPrice       Float
+  discountPercent Float     @default(0.0)
+  gstPercent      Float     @default(18.0)
+  baseAmount      Float
+  discountAmount  Float
+  taxableAmount   Float
+  gstAmount       Float
+  lineAmount      Float
+
+  quotation       Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("quotation_items")
+}
+
+model SalesOrder {
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique
+  customerId    String
+  quotationId   String      @unique
+  orderDate     DateTime    @default(now())
+  totalAmount   Float
+  status        OrderStatus @default(PENDING)
+  confirmedAt   DateTime?
+  confirmedById String?
+  notes         String?
+  createdById   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  customer      Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  quotation     Quotation   @relation(fields: [quotationId], references: [id], onDelete: Restrict)
+  createdBy     User        @relation("SalesOrderCreator", fields: [createdById], references: [id])
+  confirmedBy   User?       @relation("SalesOrderConfirmer", fields: [confirmedById], references: [id])
+  items         SalesOrderItem[]
+  dispatch      Dispatch?
+
+  @@map("sales_orders")
+}
+
+model SalesOrderItem {
+  id           String     @id @default(uuid())
+  salesOrderId String
+  productId    String
+  quantity     Int
+  unitPrice    Float
+  lineAmount   Float
+
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("sales_order_items")
+}
+
+model Dispatch {
+  id             String         @id @default(uuid())
+  dispatchNumber String         @unique
+  salesOrderId   String         @unique
+  dispatchDate   DateTime       @default(now())
+  vehicleNumber  String
+  driverName     String
+  notes          String?
+  createdById    String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  salesOrder     SalesOrder     @relation(fields: [salesOrderId], references: [id], onDelete: Restrict)
+  createdBy      User           @relation(fields: [createdById], references: [id])
+  items          DispatchItem[]
+
+  @@map("dispatches")
+}
+
+model DispatchItem {
+  id         String   @id @default(uuid())
+  dispatchId String
+  productId  String
+  quantity   Int
+
+  dispatch   Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("dispatch_items")
+}

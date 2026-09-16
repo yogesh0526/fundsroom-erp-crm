@@ -9,7 +9,7 @@
 
 | Service / Environment | Access Link | Description & Notes |
 | :--- | :--- | :--- |
-| 🌐 **Live Public Web Application** | [**https://great-moons-wash.loca.lt**](https://great-moons-wash.loca.lt) | **Instant live access** *(Tunnel Password / IP if prompted: `104.28.252.174`)* |
+| 🌐 **Live Public Web Application** | [**https://fundsroom-erp-round2.loca.lt**](https://fundsroom-erp-round2.loca.lt) | **Instant live access** *(Tunnel Password / IP if prompted: `104.28.252.174`)* |
 | 🌐 **Cloud Production (Vercel)** | [**https://fundsroom-erp-crm-five.vercel.app**](https://fundsroom-erp-crm-five.vercel.app) | Cloud-deployed frontend application on Vercel |
 | 💻 **Local Web Application** | [`http://localhost:5173`](http://localhost:5173) | Vite + React frontend running locally |
 | ⚙️ **Local REST API** | [`http://localhost:5000/api`](http://localhost:5000/api) | Express + Prisma REST API running locally |

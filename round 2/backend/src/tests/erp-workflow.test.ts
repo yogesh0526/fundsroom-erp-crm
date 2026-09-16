@@ -109,6 +109,68 @@ describe('Full-Stack ERP Workflow & Business Logic Tests', () => {
   });
 
   afterAll(async () => {
+    // Automatically restore demo seed so running test suite never wipes credentials for UI testing
+    const bcrypt = await import('bcryptjs');
+    const adminHash = await bcrypt.default.hash('admin123', 10);
+    const salesHash = await bcrypt.default.hash('sales123', 10);
+
+    // Clean test records
+    await prisma.dispatchItem.deleteMany();
+    await prisma.dispatch.deleteMany();
+    await prisma.salesOrderItem.deleteMany();
+    await prisma.salesOrder.deleteMany();
+    await prisma.quotationItem.deleteMany();
+    await prisma.quotation.deleteMany();
+    await prisma.enquiryItem.deleteMany();
+    await prisma.enquiry.deleteMany();
+    await prisma.inventory.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.customer.deleteMany();
+    await prisma.user.deleteMany();
+
+    await prisma.user.createMany({
+      data: [
+        { name: 'Operations Admin', email: 'admin@erp.com', password: adminHash, role: Role.ADMIN },
+        { name: 'Rohan Mehta (Sales)', email: 'sales@erp.com', password: salesHash, role: Role.SALES },
+      ],
+    });
+
+    const productsData = [
+      { productCode: 'PRD-001', productName: 'Heavy Duty Hydraulic Pump 500 Bar', category: 'Hydraulics', unit: 'PCS', basePrice: 18500.0, stock: 100 },
+      { productCode: 'PRD-002', productName: 'Industrial Electric Motor 5HP 3-Phase', category: 'Electrical Machinery', unit: 'NOS', basePrice: 12800.0, stock: 150 },
+      { productCode: 'PRD-003', productName: 'Stainless Steel Ball Valve 2-inch ANSI 150', category: 'Piping & Valves', unit: 'PCS', basePrice: 2450.0, stock: 300 },
+      { productCode: 'PRD-004', productName: 'Pneumatic Air Cylinder 50mm Bore 200mm Stroke', category: 'Pneumatics', unit: 'PCS', basePrice: 4200.0, stock: 80 },
+      { productCode: 'PRD-005', productName: 'High Pressure Reinforced Hydraulic Hose 10m', category: 'Hoses & Fittings', unit: 'MTR', basePrice: 1650.0, stock: 250 },
+      { productCode: 'PRD-006', productName: 'Precision Helical Gearbox 20:1 Ratio', category: 'Mechanical Power', unit: 'NOS', basePrice: 24000.0, stock: 50 },
+    ];
+
+    for (const p of productsData) {
+      await prisma.product.create({
+        data: {
+          productCode: p.productCode,
+          productName: p.productName,
+          category: p.category,
+          unit: p.unit,
+          basePrice: p.basePrice,
+          inventory: {
+            create: {
+              physicalQuantity: p.stock,
+              reservedQuantity: 0,
+              damagedQuantity: 0,
+            },
+          },
+        },
+      });
+    }
+
+    await prisma.customer.createMany({
+      data: [
+        { companyName: 'ABC Engineering Pvt. Ltd.', contactPerson: 'Rajesh Sharma', mobile: '9876543210', email: 'rajesh@abcengineering.com', city: 'Pune' },
+        { companyName: 'Apex Industrial Solutions', contactPerson: 'Priya Verma', mobile: '9812345678', email: 'priya@apexindustries.com', city: 'Ahmedabad' },
+        { companyName: 'Precision Automations LLP', contactPerson: 'Vikram Patel', mobile: '9923456789', email: 'vikram@precisionauto.in', city: 'Vadodara' },
+      ],
+    });
+
     await prisma.$disconnect();
   });
 

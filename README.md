@@ -10,7 +10,8 @@
 | Service / Environment | Access Link | Description & Notes |
 | :--- | :--- | :--- |
 | 🌐 **Live Public Web Application** | [**https://fundsroom-erp-round2.loca.lt**](https://fundsroom-erp-round2.loca.lt) | **Instant live access** *(Tunnel Password / IP if prompted: `104.28.252.174`)* |
-| 🌐 **Cloud Production (Vercel)** | [**https://fundsroom-erp-crm-five.vercel.app**](https://fundsroom-erp-crm-five.vercel.app) | Cloud-deployed frontend application on Vercel |
+| 🌐 **Cloud Frontend (Vercel)** | [**https://fundsroom-erp-crm-five.vercel.app**](https://fundsroom-erp-crm-five.vercel.app) | Cloud-deployed frontend application on Vercel (Works on any device) |
+| ⚙️ **Cloud Backend (Render)** | [**https://fundsroom-erp-crm-t1t8.onrender.com/api**](https://fundsroom-erp-crm-t1t8.onrender.com/api) | Hosted Node.js/Express API connected to Cloud Neon PostgreSQL |
 | 💻 **Local Web Application** | [`http://localhost:5173`](http://localhost:5173) | Vite + React frontend running locally |
 | ⚙️ **Local REST API** | [`http://localhost:5000/api`](http://localhost:5000/api) | Express + Prisma REST API running locally |
 | 📚 **Interactive Swagger API Docs** | [`http://localhost:5000/api-docs`](http://localhost:5000/api-docs) | OpenAPI interactive endpoints specification |

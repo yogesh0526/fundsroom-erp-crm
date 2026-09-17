@@ -2,13 +2,13 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY "round 2/backend/package*.json" ./
-COPY "round 2/backend/tsconfig*.json" ./
-COPY "round 2/backend/prisma" ./prisma/
+COPY backend/package*.json ./
+COPY backend/tsconfig*.json ./
+COPY backend/prisma ./prisma/
 
 RUN npm install
 
-COPY "round 2/backend/src" ./src
+COPY backend/src ./src
 
 RUN npx prisma generate
 RUN npm run build
@@ -20,7 +20,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5000
 
-COPY "round 2/backend/package*.json" ./
+COPY backend/package*.json ./
 RUN npm install --only=production
 
 COPY --from=builder /app/dist ./dist
